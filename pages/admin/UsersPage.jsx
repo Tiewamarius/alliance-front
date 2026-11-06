@@ -513,7 +513,7 @@ export default function Clients() {
             
 {filteredClients.length ? (
     view === "grid" ? (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 2xl:grid-cols-3">
+        <div className="grid grid-cols-3 gap-6 xl:grid-cols-3 2xl:grid-cols-3">
             {filteredClients.map((client) => (
                 <ClientCard key={client.id} client={client} />
             ))}

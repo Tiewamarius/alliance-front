@@ -372,7 +372,7 @@ export default function Sidebar({ onLogout }) {
 
                 {/* Profil */}
                 <div className="border-t border-slate-200/70 p-4 dark:border-slate-700/50">
-                    <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                    {/* <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 text-sm font-bold text-white ring-2 ring-blue-500/30">
                             {initials || "U"}
                         </div>
@@ -395,7 +395,7 @@ export default function Sidebar({ onLogout }) {
                         >
                             <UserRound className="h-4 w-4" />
                         </button>
-                    </div>
+                    </div> */}
 
                     <button
                         type="button"

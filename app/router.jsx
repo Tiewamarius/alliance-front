@@ -29,6 +29,8 @@ import ClientDocumentsPage from "../pages/client/DocumentsPage";
 import ClientProfilePage from "../pages/client/ProfilePage";
 
 import AdminDashboardPage from "../pages/admin/DashboardPage";
+import AdminShipmentsPage from "../pages/admin/ExpeditionsPage";
+import AdminColisPage from "../pages/admin/ColisPage";
 import AdminUsersPage from "../pages/admin/UsersPage";
 import AdminRolesPage from "../pages/admin/RolesPage";
 import AdminTeamsPage from "../pages/admin/AdminTeamsPage";
@@ -111,30 +113,20 @@ export default function AppRouter() {
                 </Route>
 
                 {/* ADMINISTRATION */}
-                <Route
-                    element={
-                        <RequireRole
-                            allowedRoles={["super_admin", "admin"]}
-                        />
-                    }
-                >
+                <Route element={ <RequireRole allowedRoles={["super_admin", "admin"]}/>}>
                     <Route path="admin" element={<AdminLayout section="admin" />}>
-                        <Route index element={<AdminDashboardPage />} />
-                        <Route path="clients" element={<AdminUsersPage />} />
-                        <Route path="roles" element={<AdminRolesPage />} />
-                        <Route path="equipes" element={<AdminTeamsPage />} />
-                        <Route path="permissions" element={<AdminPermissionsPage />} />
+                    <Route index element={<AdminDashboardPage />} />
+                    <Route path="expeditions" element={<AdminShipmentsPage />} />
+                    <Route path="colis" element={<AdminColisPage />} />
+                    <Route path="clients" element={<AdminUsersPage />} />
+                    <Route path="roles" element={<AdminRolesPage />} />
+                    <Route path="equipes" element={<AdminTeamsPage />} />
+                    <Route path="permissions" element={<AdminPermissionsPage />} />
                     </Route>
                 </Route>
 
                 {/* AGENCE */}
-                <Route
-                    element={
-                        <RequireRole
-                            allowedRoles={[
-                                "super_admin",
-                                "admin",
-                                "responsable_agence",
+                <Route element={<RequireRole allowedRoles={[ "super_admin", "admin", "responsable_agence",
                             ]}
                         />
                     }

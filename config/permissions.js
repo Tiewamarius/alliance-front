@@ -6,6 +6,7 @@ export const ROLES = {
     LOGISTICS: "logistique",
 };
 
+
 export const PERMISSIONS = {
     USERS_VIEW: "users.view",
     USERS_MANAGE: "users.manage",

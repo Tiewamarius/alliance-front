@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
     Search,
     Plus,
@@ -11,63 +11,15 @@ import {
     MapPin,
     Tag,
     X,
+    RefreshCw,
 } from "lucide-react";
 
-// Remplacez ces données de démonstration par les données de l'API Laravel.
-const demoClients = [
-    {
-        id: 1,
-        name: "Alex Chen",
-        position: "CTO",
-        company: "Acme Corp",
-        email: "alex@acme.io",
-        phone: "+1 (415) 234-5678",
-        location: "San Francisco, CA",
-        status: "active",
-        tags: ["Enterprise", "Tech"],
-        deals: 3,
-        value: 42000,
-        lastActive: "2 hours ago",
-        initials: "AC",
-        color: "purple",
-    },
-    {
-        id: 2,
-        name: "Sarah Kim",
-        position: "Product Manager",
-        company: "Pixel Co",
-        email: "sarah@pixel.co",
-        phone: "+1 (628) 901-2345",
-        location: "New York, NY",
-        status: "active",
-        tags: ["Pro", "Design"],
-        deals: 1,
-        value: 5000,
-        lastActive: "1 day ago",
-        initials: "SK",
-        color: "cyan",
-    },
-    {
-        id: 3,
-        name: "Marcus Webb",
-        position: "CEO",
-        company: "Loop Dev",
-        email: "marcus@loop.dev",
-        phone: "+44 20 7123 4567",
-        location: "London, UK",
-        status: "prospect",
-        tags: ["Enterprise", "Prospect"],
-        deals: 0,
-        value: null,
-        lastActive: "3 days ago",
-        initials: "MW",
-        color: "amber",
-    },
-];
+import clientService from "../../services/api/clientService";
 
-const statusLabels = {
-    active: "Active",
-    inactive: "Inactive",
+// Remplacez ces données de démonstration par les données de l'API Laravel.
+ const statusLabels = {
+    active: "Actif",
+    inactive: "Inactif",
     prospect: "Prospect",
 };
 
@@ -86,13 +38,102 @@ const avatarStyles = {
 
 function formatValue(value) {
     if (value == null) return "—";
+
     if (value >= 1000) {
         const thousands = value / 1000;
-        return `$${Number.isInteger(thousands) ? thousands : thousands.toFixed(1)}k`;
+        return `${Number.isInteger(thousands) ? thousands : thousands.toFixed(1)}k`;
     }
-    return `$${value}`;
+
+    return String(value);
 }
 
+function formatLastActive(date) {
+    if (!date) return "—";
+
+    const timestamp = new Date(date).getTime();
+
+    if (Number.isNaN(timestamp)) return "—";
+
+    const diff = Math.max(0, Date.now() - timestamp);
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return "À l'instant";
+    if (minutes < 60) return `Il y a ${minutes} min`;
+    if (hours < 24) return `Il y a ${hours} h`;
+    if (days === 1) return "Hier";
+
+    return `Il y a ${days} jours`;
+}
+
+/**
+ * Transforme un client Laravel en objet adapté à l'interface.
+ */
+function normalizeClient(client) {
+    const personne = client.personne ?? {};
+
+    const name = [
+        personne.prenom,
+        personne.nom,
+    ].filter(Boolean).join(" ").trim();
+
+    const displayName =
+        client.raison_sociale ||
+        personne.societe ||
+        name ||
+        "Client sans nom";
+
+    const typeClient = String(client.type_client ?? "").toLowerCase();
+
+    const status =
+        typeClient.includes("prospect")
+            ? "prospect"
+            : client.is_active
+                ? "active"
+                : "inactive";
+
+    const initials = displayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+
+    return {
+        id: client.id,
+        name: displayName,
+        position: personne.fonction ?? "—",
+        company: client.raison_sociale || personne.societe || "—",
+        email: personne.email || client.email_facturation || "—",
+        phone: personne.telephone || client.telephone_facturation || "—",
+        location: "—",
+        status,
+        tags: client.type_client ? [client.type_client] : [],
+        deals: client.expeditions_count ?? 0,
+        value: null,
+        lastActive: formatLastActive(client.updated_at),
+        initials,
+        color: "purple",
+    };
+}
+
+/**
+ * Extrait les lignes selon les formats de réponse Laravel possibles.
+ */
+function extractClients(response) {
+    if (Array.isArray(response)) return response;
+
+    if (Array.isArray(response?.data)) return response.data;
+
+    if (Array.isArray(response?.data?.data)) return response.data.data;
+
+    return [];
+}
+ 
+
+ 
 function ClientCard({ client }) {
     const name = client.name ?? "Client";
     const initials =
@@ -368,12 +409,57 @@ function ClientListTable({ clients }) {
 }
 
 export default function Clients() {
-    const [clients] = useState(demoClients);
+    const [clients, setClients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
     const [view, setView] = useState("grid");
     const [showFilters, setShowFilters] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
+
+    const loadClients = useCallback(async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+        const response = await clientService.getAll({
+            per_page: 100,
+        });
+
+        const rows = extractClients(response);
+
+        setClients(rows.map(normalizeClient));
+    } catch (err) {
+        console.error("Erreur chargement clients :", err);
+
+        if (err.response?.status === 401) {
+            setError("Votre session a expiré. Veuillez vous reconnecter.");
+        } else if (err.response?.status === 403) {
+            setError("Vous n'avez pas les autorisations nécessaires.");
+        } else if (err.response?.status === 404) {
+            setError("La route API des clients est introuvable.");
+        } else {
+            setError(
+                err.response?.data?.message ||
+                "Impossible de charger les clients."
+            );
+        }
+
+        setClients([]);
+    } finally {
+        setLoading(false);
+    }
+}, []);
+
+useEffect(() => {
+    loadClients();
+}, [loadClients]);
+
+    useEffect(() => {
+        loadClients();
+    }, []);
 
     const filteredClients = useMemo(() => {
         const term = search.trim().toLowerCase();
@@ -385,7 +471,10 @@ export default function Clients() {
                 client.email,
                 client.phone,
                 client.location,
-            ].some((value) => String(value ?? "").toLowerCase().includes(term));
+                client.position,
+            ].some((value) =>
+                String(value ?? "").toLowerCase().includes(term)
+            );
 
             const matchesStatus =
                 status === "all" || client.status === status;
@@ -395,44 +484,60 @@ export default function Clients() {
     }, [clients, search, status]);
 
     const filters = [
-        { value: "all", label: "All" },
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        { value: "prospect", label: "Prospect" },
+        { value: "all", label: "Tous" },
+        { value: "active", label: "Actifs" },
+        { value: "inactive", label: "Inactifs" },
+        { value: "prospect", label: "Prospects" },
     ];
 
     return (
         <div className="min-h-full bg-slate-50 p-5 md:p-6">
-            {/* Page title */}
+
+            {/* En-tête */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-                        CLIENTS
+                        Clients
                     </h1>
+
                     <p className="mt-1.5 text-base text-slate-500">
-                        {clients.length} total contacts
+                        {clients.length} clients enregistrés
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={() => setShowAddForm(true)}
-                    className="inline-flex items-center gap-3 rounded-xl bg-violet-600 px-6 py-3 text-lg font-medium text-white shadow-md transition hover:bg-violet-700"
-                >
-                    <Plus className="h-5 w-5" />
-                    Add Contact
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={loadClients}
+                        disabled={loading}
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                        Actualiser
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setShowAddForm(true)}
+                        className="inline-flex items-center gap-3 rounded-xl bg-violet-600 px-6 py-3 text-lg font-medium text-white shadow-md transition hover:bg-violet-700"
+                    >
+                        <Plus className="h-5 w-5" />
+                        Ajouter un client
+                    </button>
+                </div>
             </div>
 
-            {/* Search and filters */}
-            <div className="mb-8 flex flex-wrap items-center gap-4">
-                <div className="relative min-w-[220px] flex-1">
+            {/* Recherche et filtres */}
+            <div className="sticky top-0 z-40 mb-8 flex flex-wrap items-center gap-4">
+
+                <div className="relative min-w-55 flex-1">
                     <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+
                     <input
                         type="search"
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search contacts..."
+                        placeholder="Rechercher un client..."
                         className="w-full rounded-xl border border-slate-200 bg-slate-100/80 py-2.5 pl-12 pr-4 text-base text-slate-800 outline-none placeholder:text-slate-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                     />
                 </div>
@@ -444,10 +549,10 @@ export default function Clients() {
                             type="button"
                             onClick={() => setStatus(filter.value)}
                             className={`rounded-lg px-3.5 py-1.5 text-sm transition ${
-    status === filter.value
-        ? "bg-violet-600 font-semibold text-white shadow"
-        : "text-slate-600 hover:bg-white"
-}`}
+                                status === filter.value
+                                    ? "bg-violet-600 font-semibold text-white shadow"
+                                    : "text-slate-600 hover:bg-white"
+                            }`}
                         >
                             {filter.label}
                         </button>
@@ -457,9 +562,10 @@ export default function Clients() {
                 <button
                     type="button"
                     onClick={() => setShowFilters((value) => !value)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 hover:bg-white">
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 hover:bg-white"
+                >
                     <Filter className="h-5 w-5" />
-                    Filters
+                    Filtres
                 </button>
 
                 <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100/80 p-1.5">
@@ -467,32 +573,37 @@ export default function Clients() {
                         type="button"
                         aria-label="Vue en grille"
                         onClick={() => setView("grid")}
-                        className={`rounded-lg p-2 ${view === "grid"
+                        className={`rounded-lg p-2 ${
+                            view === "grid"
                                 ? "bg-violet-600 text-white"
                                 : "text-slate-500"
-                            }`}
+                        }`}
                     >
                         <LayoutGrid className="h-5 w-5" />
                     </button>
+
                     <button
                         type="button"
                         aria-label="Vue en liste"
                         onClick={() => setView("list")}
-                        className={`rounded-lg p-2 ${view === "list"
+                        className={`rounded-lg p-2 ${
+                            view === "list"
                                 ? "bg-violet-600 text-white"
                                 : "text-slate-500"
-                            }`}
+                        }`}
                     >
                         <List className="h-5 w-5" />
                     </button>
                 </div>
             </div>
 
+            {/* Filtres avancés */}
             {showFilters && (
                 <div className="mb-6 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
                     <p className="text-sm text-slate-600">
                         Filtre par statut : {statusLabels[status] ?? "Tous"}
                     </p>
+
                     <button
                         type="button"
                         onClick={() => {
@@ -506,42 +617,75 @@ export default function Clients() {
                 </div>
             )}
 
-            <p className="mb-7 text-base text-slate-400">
-                Showing {filteredClients.length} of {clients.length} contacts
-            </p>
+            {/* Erreur API */}
+            {error && (
+                <div className="mb-6 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                    <p>{error}</p>
 
-            
-{filteredClients.length ? (
-    view === "grid" ? (
-        <div className="grid grid-cols-3 gap-6 xl:grid-cols-3 2xl:grid-cols-3">
-            {filteredClients.map((client) => (
-                <ClientCard key={client.id} client={client} />
-            ))}
-        </div>
-    ) : (
-        <ClientListTable clients={filteredClients} />
-    )
-) : (
-    <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center">
-        <p className="text-lg font-semibold text-slate-700">
-            Aucun contact trouvé
-        </p>
-        <p className="mt-2 text-slate-500">
-            Modifiez votre recherche ou choisissez un autre statut.
-        </p>
-    </div>
-)}
+                    <button
+                        type="button"
+                        onClick={loadClients}
+                        className="font-semibold underline"
+                    >
+                        Réessayer
+                    </button>
+                </div>
+            )}
 
-                
+            {/* Chargement */}
+            {loading ? (
+                <div className="rounded-2xl border border-slate-200 bg-white py-20 text-center">
+                    <RefreshCw className="mx-auto h-8 w-8 animate-spin text-violet-600" />
+                    <p className="mt-4 text-slate-500">
+                        Chargement des clients...
+                    </p>
+                </div>
+            ) : (
+                <>
+                    <p className="mb-7 text-base text-slate-400">
+                        Affichage de {filteredClients.length} client(s) sur {clients.length}
+                    </p>
 
-            {/* Formulaire visuel d'ajout */}
+                    {filteredClients.length > 0 ? (
+                        view === "grid" ? (
+                            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 2xl:grid-cols-3">
+                                {filteredClients.map((client) => (
+                                    <ClientCard
+                                        key={client.id}
+                                        client={client}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <ClientListTable clients={filteredClients} />
+                        )
+                    ) : (
+                        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center">
+                            <Building2 className="mx-auto h-10 w-10 text-slate-300" />
+
+                            <p className="mt-4 text-lg font-semibold text-slate-700">
+                                {clients.length === 0
+                                    ? "Aucun client enregistré"
+                                    : "Aucun client trouvé"}
+                            </p>
+
+                            <p className="mt-2 text-slate-500">
+                                Modifiez votre recherche ou choisissez un autre statut.
+                            </p>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* Fenêtre d'ajout temporaire */}
             {showAddForm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
                     <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
                         <div className="mb-6 flex items-center justify-between">
                             <h2 className="text-xl font-bold text-slate-900">
-                                Add Contact
+                                Ajouter un client
                             </h2>
+
                             <button
                                 type="button"
                                 onClick={() => setShowAddForm(false)}
@@ -553,9 +697,10 @@ export default function Clients() {
                         </div>
 
                         <p className="text-sm leading-6 text-slate-500">
-                            Le formulaire d'ajout sera relié à votre API Laravel
-                            lorsque nous connaîtrons les champs et l'endpoint
-                            utilisés pour créer un client.
+                            La liste des clients est maintenant connectée à Laravel.
+                            Le formulaire de création sera raccordé à l'API lorsque
+                            nous aurons validé les champs obligatoires de création
+                            d'une personne et de son profil client.
                         </p>
 
                         <button

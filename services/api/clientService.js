@@ -1,6 +1,6 @@
 import http from "./http";
 
-export const clientService = {
+const clientService = {
     async getAll(params = {}) {
         const response = await http.get("/clients", { params });
         return response.data?.data ?? response.data;
@@ -27,10 +27,11 @@ export const clientService = {
     },
 
     async getMyProfile() {
-        const response = await http.get("/me");
+        const response = await http.get("/my");
         const data = response.data?.data ?? response.data;
-        return data.client ?? null;
+        return data?.client ?? null;
     },
 };
 
 export default clientService;
+export { clientService };

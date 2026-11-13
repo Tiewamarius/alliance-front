@@ -22,11 +22,10 @@ export default function AdminLayout({ section = "admin" }) {
 
     return (
         <div
-            className={`min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 ${
-                darkMode
+            className={`min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 ${darkMode
                     ? "dark from-slate-900 via-slate-800 to-slate-900"
                     : ""
-            } transition-all duration-500`}
+                } transition-all duration-500`}
         >
             <div className="flex h-screen overflow-hidden">
                 <Sidebar
@@ -46,7 +45,7 @@ export default function AdminLayout({ section = "admin" }) {
                         onToggleDarkMode={() => setDarkMode((value) => !value)}
                     />
 
-                    <main className="min-h-0 flex-1 overflow-y-auto p-6">
+                    <main className="min-h-0 flex-1 overflow-y-auto px-0 pb-2 pt-0">
                         <Outlet />
                     </main>
                 </div>

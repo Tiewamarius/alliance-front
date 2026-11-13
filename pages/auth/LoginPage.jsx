@@ -71,10 +71,15 @@ export default function LoginPage() {
                 roleSlugs.includes(role)
             );
 
+            const roleDestination = ROLE_ROUTES[primaryRole];
+
+            const requestedDestination = location.state?.from?.pathname;
+
+            // Pour les administrateurs, toujours privilégier leur dashboard.
             const destination =
-                location.state?.from?.pathname ||
-                ROLE_ROUTES[primaryRole] ||
-                "/mon-compte";
+                ["admin", "super_admin"].includes(primaryRole)
+                    ? "/admin"
+                    : requestedDestination || roleDestination || "/mon-compte";
 
             navigate(destination, { replace: true });
         } catch (err) {
@@ -86,9 +91,9 @@ export default function LoginPage() {
 
             setError(
                 firstValidationError ||
-                    err.response?.data?.message ||
-                    err.message ||
-                    "Connexion impossible. Vérifiez vos identifiants."
+                err.response?.data?.message ||
+                err.message ||
+                "Connexion impossible. Vérifiez vos identifiants."
             );
         } finally {
             setSubmitting(false);

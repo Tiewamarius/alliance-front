@@ -331,3 +331,42 @@
     padding: 26px;
   }
 }
+
+
+.register-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.register-section h2 {
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.register-section label {
+    margin-top: 5px;
+}
+
+.register-section input,
+.register-section select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.auth-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

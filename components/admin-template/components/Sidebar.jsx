@@ -30,35 +30,36 @@ const menuItems = [
         label: "Dashboard",
         path: "/admin",
     },
+    // {
+    //     id: "analytics",
+    //     icon: BarChart3,
+    //     label: "Analytics",
+    //     submenu: [
+    //         { id: "overview", label: "Vue générale", path: "/admin/analytics" },
+    //         { id: "reports", label: "Rapports", path: "/admin/analytics/rapports" },
+    //         { id: "insights", label: "Statistiques", path: "/admin/analytics/statistiques" },
+    //     ],
+    // },
     {
-        id: "analytics",
-        icon: BarChart3,
-        label: "Analytics",
-        submenu: [
-            { id: "overview", label: "Vue générale", path: "/admin/analytics" },
-            { id: "reports", label: "Rapports", path: "/admin/analytics/rapports" },
-            { id: "insights", label: "Statistiques", path: "/admin/analytics/statistiques" },
-        ],
-    },
-    {
-        id: "expeditions",
+        id: "expeditions", label: "Tous",
         icon: Truck,
         label: "Expeditions",
-        badge: "12",
-        submenu: [
-            { id: "all-expeditions", label: "Tous", path: "/admin/expeditions" },
-            { id: "pending-orders", label: "En attente", path: "/admin/expeditions/en-attente" },
-            { id: "completed-orders", label: "Terminées", path: "/admin/expeditions/terminees" },
-        ],
+        // badge: "12",
+        path: "/admin/expeditions" 
+        // submenu: [
+        //     { id: "all-expeditions", label: "Tous", path: "/admin/expeditions" },
+        //     { id: "pending-orders", label: "En attente", path: "/admin/expeditions/en-attente" },
+        //     { id: "completed-orders", label: "Terminées", path: "/admin/expeditions/terminees" },
+        // ],
     },
     {
         id: "colis",
         icon: Package,
         label: "Colis",
         submenu: [
-            { id: "all-colis", label: "Tous les colis", path: "/admin/colis" },
-            { id: "categories", label: "Catégories", path: "/admin/colis/categories" },
+            // { id: "categories", label: "Catégories", path: "/admin/colis/categories" },
             { id: "inventory", label: "Inventaire", path: "/admin/colis/inventaire" },
+            { id: "all-colis", label: "Tous les colis", path: "/admin/colis" },
         ],
     },
     {
@@ -87,13 +88,14 @@ const bottomItems = [
         id: "notifications",
         icon: Bell,
         label: "Notifications",
-        badge: "3",
+        badge: "New",
         path: "/admin/notifications",
     },
     {
         id: "help",
         icon: HelpCircle,
         label: "Centre d'aide",
+        badge: "New",
         path: "/admin/aide",
     },
     {
@@ -347,7 +349,7 @@ export default function Sidebar({ onLogout }) {
                 </nav>
 
                 {/* Carte d'aide */}
-                <div className="px-4 pb-3">
+                {/* <div className="px-4 pb-3">
                     <div className="rounded-xl border border-blue-100 bg-linear-to-br from-blue-50 to-purple-50 p-3 dark:border-slate-700 dark:from-slate-800 dark:to-slate-800/50">
                         <div className="mb-2 flex items-center gap-2">
                             <Activity className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -368,7 +370,7 @@ export default function Sidebar({ onLogout }) {
                             Consulter l'aide
                         </button>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Profil */}
                 <div className="border-t border-slate-200/70 p-4 dark:border-slate-700/50">

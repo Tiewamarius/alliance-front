@@ -10,6 +10,7 @@ import RequireGuest from "../guards/RequireGuest";
 import RequireRole from "../guards/RequireRole";
 
 import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 
@@ -84,10 +85,8 @@ export default function AppRouter() {
             <Route element={<RequireGuest />}>
                 <Route element={<AuthLayout />}>
                     <Route path="connexion" element={<LoginPage />} />
-                    <Route
-                        path="mot-de-passe-oublie"
-                        element={<ForgotPasswordPage />}
-                    />
+                    <Route path="inscription" element={<RegisterPage />} />
+                    <Route path="mot-de-passe-oublie" element={<ForgotPasswordPage />} />
                     <Route
                         path="reinitialiser-mot-de-passe/:token"
                         element={<ResetPasswordPage />}
@@ -113,23 +112,23 @@ export default function AppRouter() {
                 </Route>
 
                 {/* ADMINISTRATION */}
-                <Route element={ <RequireRole allowedRoles={["super_admin", "admin"]}/>}>
+                <Route element={<RequireRole allowedRoles={["super_admin", "admin"]} />}>
                     <Route path="admin" element={<AdminLayout section="admin" />}>
-                    <Route index element={<AdminDashboardPage />} />
-                    <Route path="expeditions" element={<AdminShipmentsPage />} />
-                    <Route path="colis" element={<AdminColisPage />} />
-                    <Route path="clients" element={<AdminUsersPage />} />
-                    <Route path="roles" element={<AdminRolesPage />} />
-                    <Route path="equipes" element={<AdminTeamsPage />} />
-                    <Route path="permissions" element={<AdminPermissionsPage />} />
+                        <Route index element={<AdminDashboardPage />} />
+                        <Route path="expeditions" element={<AdminShipmentsPage />} />
+                        <Route path="colis" element={<AdminColisPage />} />
+                        <Route path="clients" element={<AdminUsersPage />} />
+                        <Route path="roles" element={<AdminRolesPage />} />
+                        <Route path="equipes" element={<AdminTeamsPage />} />
+                        <Route path="permissions" element={<AdminPermissionsPage />} />
                     </Route>
                 </Route>
 
                 {/* AGENCE */}
-                <Route element={<RequireRole allowedRoles={[ "super_admin", "admin", "responsable_agence",
-                            ]}
-                        />
-                    }
+                <Route element={<RequireRole allowedRoles={["super_admin", "admin", "responsable_agence",
+                ]}
+                />
+                }
                 >
                     <Route path="agence" element={<AdminLayout section="agence" />}>
                         <Route index element={<AgencyDashboardPage />} />

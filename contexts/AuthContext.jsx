@@ -10,6 +10,7 @@ import authService from "../services/api/authService";
 
 const AuthContext = createContext(null);
 
+
 function normalizeUserResponse(response) {
     return {
         user: response?.user ?? null,

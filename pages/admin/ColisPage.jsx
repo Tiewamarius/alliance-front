@@ -747,7 +747,7 @@ export default function Colis() {
             </div>
 
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              COLIS
+              Colis
             </h1>
           </div>
 
@@ -837,11 +837,11 @@ export default function Colis() {
           RECHERCHE ET FILTRES
       ================================================ */}
 
-      <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="sticky top-0 z-40 mb-5 rounded-2xl border border-slate-200 bg-white p-4">
 
         <div className="flex flex-wrap items-center gap-3">
 
-          <div className="relative min-w-[220px] flex-1">
+          <div className="relative min-w-55 flex-1">
             <Search
               size={19}
               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"

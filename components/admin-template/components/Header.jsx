@@ -112,11 +112,11 @@ export default function Header({
                     </button>
 
                     <div className="hidden md:block">
-                        <h2 className="text-2xl font-black text-slate-800 dark:text-white">
+                        {/* <h2 className="text-2xl font-black text-slate-800 dark:text-white">
                             {displayTitle}
-                        </h2>
+                        </h2> */}
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                            Content de vous revoir, {name} !
+                            Content de vous revoir, <span className="font-black text-slate-800 dark:text-white">{name}</span> !
                         </p>
                     </div>
                 </div>

@@ -782,11 +782,11 @@ export default function ExpeditionsPage() {
       {/* Statistiques */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="Total expéditions"
-          value={expeditions.length}
-          icon={Package}
-          color="bg-violet-50 text-violet-600"
-        />
+  title="Total expéditions"
+  value={expeditions.length >= 100 ? "100+" : expeditions.length}
+  icon={Package}
+  color="bg-violet-50 text-violet-600"
+/>
 
         <StatCard
           title="En transit"

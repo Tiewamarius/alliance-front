@@ -6,7 +6,7 @@ export default function Header({ onSearch, onBurger }) {
     <header className="header header-3">
       <div className="sticky-height" />
       <div className="header-wrapper">
-        <TopBar />
+        {/* <TopBar /> */}
         <Navbar onSearch={onSearch} onBurger={onBurger} />
       </div>
     </header>

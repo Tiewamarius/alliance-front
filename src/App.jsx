@@ -1,18 +1,19 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { BrowserRouter } from "react-router-dom";
 
-import './App.css'
+import { AuthProvider } from "../contexts/AuthContext";
+import AppRouter from "./../app/router";
 
-function App() {
-  const [count, setCount] = useState(0)
+import "./../styles/variables.css";
+import "./../styles/global.css";
+import "./../styles/dashboard.css";
+import "./../styles/responsive.css";
 
-  return (
-    <>
-    
-    </>
-  )
+export default function App() {
+    return (
+        <BrowserRouter>
+            <AuthProvider>
+                <AppRouter />
+            </AuthProvider>
+        </BrowserRouter>
+    );
 }
-
-export { default } from "../app/App";

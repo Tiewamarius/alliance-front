@@ -1,13 +1,13 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import PublicLayout from "../layouts/PublicLayout";
-import AuthLayout from "../layouts/AuthLayout";
-import ClientLayout from "../layouts/ClientLayout";
-import AdminLayout from "../layouts/AdminLayout";
+import PublicLayout from "../layouts/public/PublicLayout";
+import AuthLayout from "../layouts/auth/AuthLayout";
+import ClientLayout from "../layouts/client/ClientLayout";
+import AdminLayout from "../layouts//admin/AdminLayout";
 
-import RequireAuth from "../guards/RequireAuth";
-import RequireGuest from "../guards/RequireGuest";
-import RequireRole from "../guards/RequireRole";
+import RequireAuth from "../app/guards/RequireAuth";
+import RequireGuest from "../app/guards/RequireGuest";
+import RequireRole from "../app/guards/RequireRole";
 
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
@@ -78,7 +78,11 @@ export default function AppRouter() {
                 <Route path="services" element={<ServicesPage />} />
                 <Route path="agences" element={<AgenciesPage />} />
                 <Route path="contact" element={<ContactPage />} />
-                <Route path="suivi" element={<TrackingPage />} />
+                <Route path="suivi" element={<TrackingPage />} />  
+                {/* <Route path="/a-propos" element={<About />} /> */}
+                {/* <Route path="/contact" element={<Contact />} /> */}
+             
+
             </Route>
 
             {/* Pages d'authentification */}

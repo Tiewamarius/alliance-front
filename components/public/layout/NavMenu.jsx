@@ -1,7 +1,7 @@
 import NavDropdown from './NavDropdown';
 
 export const menu = [
-  { label: 'Home', items: [
+  { label: 'Homess', items: [
     { label: 'Home 1', href: '/' },
     { label: 'Home 2', href: '/index-2' },
     { label: 'Home 3', href: '/index-3', current: true, badge: 'New' },

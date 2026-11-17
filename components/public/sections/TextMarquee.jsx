@@ -1,5 +1,5 @@
 import Marquee from 'react-fast-marquee';
-import MarqueeItem from './MarqueeItem';
+import MarqueeItem from './MarqueeItem'; // Sans accolades
 
 const words = ['Transport', 'Logistic', 'Global Export', 'Transport', 'Global Import'];
 

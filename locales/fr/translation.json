@@ -1,0 +1,25 @@
+{
+  "header": {
+    "followUs": "Suivez-nous",
+    "navigation": "Navigationhh",
+    "search": "Rechercher",
+    "requestQuote": "Demander un devis",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "myAccount": "Mon espace",
+    "contactUs": "Nous contacter",
+    "menu": {
+      "home": "Accueil",
+      "services": "Nos services",
+      "agencies": "Nos agences",
+      "tracking": "Suivi colis",
+      "about": "À propos",
+      "contact": "Contact"
+    },
+    "contact": {
+      "phone": "+225 07 00 00 00 00",
+      "email": "contact@alliancetransit.com",
+      "location": "Abidjan, Côte d'Ivoire"
+    }
+  }
+}

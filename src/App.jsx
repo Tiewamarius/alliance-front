@@ -1,19 +1,10 @@
-import { BrowserRouter } from "react-router-dom";
-
-import { AuthProvider } from "../contexts/AuthContext";
-import AppRouter from "./../app/router";
-
-import "./../styles/variables.css";
-import "./../styles/global.css";
-import "./../styles/dashboard.css";
-import "./../styles/responsive.css";
+import AppProviders from "./app/providers/AppProviders";
+import AppRouter from "./app/router";
 
 export default function App() {
-    return (
-        <BrowserRouter>
-            <AuthProvider>
-                <AppRouter />
-            </AuthProvider>
-        </BrowserRouter>
-    );
+  return (
+    <AppProviders>
+      <AppRouter />
+    </AppProviders>
+  );
 }

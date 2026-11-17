@@ -3,11 +3,11 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import PublicLayout from "../layouts/public/PublicLayout";
 import AuthLayout from "../layouts/auth/AuthLayout";
 import ClientLayout from "../layouts/client/ClientLayout";
-import AdminLayout from "../layouts//admin/AdminLayout";
+import AdminLayout from "../layouts/admin/AdminLayout";
 
-import RequireAuth from "../app/guards/RequireAuth";
-import RequireGuest from "../app/guards/RequireGuest";
-import RequireRole from "../app/guards/RequireRole";
+import RequireAuth from "./guards/RequireAuth";
+import RequireGuest from "./guards/RequireGuest";
+import RequireRole from "./guards/RequireRole";
 
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";

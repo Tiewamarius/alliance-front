@@ -1,0 +1,343 @@
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\authService.js
+========================================
+import http, { TOKEN_KEY } from "./http";
+import ENDPOINTS from "./endpoints";
+
+// Laravel peut renvoyer le contenu tel quel ou dans une clé "data".
+function unwrap(body) {
+  return body?.data ?? body;
+}
+
+function storeToken(data) {
+  if (data?.token) {
+    localStorage.setItem(TOKEN_KEY, data.token);
+  }
+}
+
+const authService = {
+  async login(credentials) {
+    const response = await http.post(ENDPOINTS.auth.login, credentials);
+    const data = unwrap(response.data);
+
+    storeToken(data);
+
+    return data;
+  },
+
+  async register(payload) {
+    const response = await http.post(ENDPOINTS.auth.register, payload);
+    const data = unwrap(response.data);
+
+    storeToken(data);
+
+    return data;
+  },
+
+  async my() {
+    const response = await http.get(ENDPOINTS.auth.me);
+
+    return unwrap(response.data);
+  },
+
+  async logout() {
+    try {
+      await http.post(ENDPOINTS.auth.logout);
+    } finally {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  },
+
+  async updateProfile(payload) {
+    const response = await http.put(ENDPOINTS.auth.updateProfile, payload);
+
+    return unwrap(response.data);
+  },
+};
+
+// Compatibilité avec les deux formes d'import.
+export { authService };
+export default authService;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\clientService.js
+========================================
+import http from "./http";
+
+const clientService = {
+    async getAll(params = {}) {
+        const response = await http.get("/clients", { params });
+        return response.data?.data ?? response.data;
+    },
+
+    async getById(id) {
+        const response = await http.get(`/clients/${id}`);
+        return response.data?.data ?? response.data;
+    },
+
+    async create(payload) {
+        const response = await http.post("/clients", payload);
+        return response.data?.data ?? response.data;
+    },
+
+    async update(id, payload) {
+        const response = await http.put(`/clients/${id}`, payload);
+        return response.data?.data ?? response.data;
+    },
+
+    async delete(id) {
+        const response = await http.delete(`/clients/${id}`);
+        return response.data;
+    },
+
+    async getMyProfile() {
+        const response = await http.get("/my");
+        const data = response.data?.data ?? response.data;
+        return data?.client ?? null;
+    },
+};
+
+export default clientService;
+export { clientService };
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\dashboardService.js
+========================================
+import http from "./http";
+
+const dashboardService = {
+  async getDashboard(params = {}) {
+    const response = await http.get("/admin/dashboard", { params });
+
+    // Compatible avec une réponse Laravel enveloppée dans data
+    return response.data?.data ?? response.data;
+  },
+};
+
+export default dashboardService;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\deliveryService.js
+========================================
+import http from "./http";
+
+export const deliveryService = {
+    async getAll(params = {}) {
+        const response = await http.get("/livraisons", { params });
+        return response.data?.data ?? response.data;
+    },
+
+    async getById(id) {
+        const response = await http.get(`/livraisons/${id}`);
+        return response.data?.data ?? response.data;
+    },
+
+    async create(payload) {
+        const response = await http.post("/livraisons", payload);
+        return response.data?.data ?? response.data;
+    },
+
+    async update(id, payload) {
+        const response = await http.put(`/livraisons/${id}`, payload);
+        return response.data?.data ?? response.data;
+    },
+};
+
+export default deliveryService;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\endpoints.js
+========================================
+// Chemins de l'API, relatifs à VITE_API_BASE_URL (ex. http://127.0.0.1:8000/api/v1).
+// À compléter module par module (colis, expéditions, factures...).
+
+export const ENDPOINTS = {
+    auth: {
+        login: "/login",
+        register: "/register",
+        me: "/my",
+        updateProfile: "/my",
+        logout: "/logout",
+    },
+};
+
+export default ENDPOINTS;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\expeditionService.js
+========================================
+import http from "./http";
+
+const expeditionService = {
+  async getAll(params = {}) {
+    const response = await http.get("/expeditions", {
+      params,
+    });
+
+    // Laravel renvoie ici : { data: { current_page, data: [], ... } }
+    return response.data?.data ?? response.data;
+  },
+
+  async getById(id) {
+    const response = await http.get(`/expeditions/${id}`);
+    return response.data?.data ?? response.data;
+  },
+
+  async create(payload) {
+    const response = await http.post("/expeditions", payload);
+    return response.data?.data ?? response.data;
+  },
+};
+
+export default expeditionService;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\http.js
+========================================
+import axios from "axios";
+
+export const TOKEN_KEY = "alliance_token";
+export const UNAUTHORIZED_EVENT = "auth:unauthorized";
+
+const http = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1",
+    headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+    },
+    timeout: 20000,
+});
+
+http.interceptors.request.use((config) => {
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
+
+http.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        // Un 401 alors qu'un token existait : session expirée ou révoquée.
+        // AuthContext écoute cet événement pour déconnecter l'interface.
+        if (error.response?.status === 401 && localStorage.getItem(TOKEN_KEY)) {
+            localStorage.removeItem(TOKEN_KEY);
+            window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+export default http;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\interceptors.js
+========================================
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\invoiceService.js
+========================================
+import http from "./http";
+
+export const invoiceService = {
+    async getAll(params = {}) {
+        const response = await http.get("/factures", { params });
+        return response.data?.data ?? response.data;
+    },
+
+    async getById(id) {
+        const response = await http.get(`/factures/${id}`);
+        return response.data?.data ?? response.data;
+    },
+
+    async create(payload) {
+        const response = await http.post("/factures", payload);
+        return response.data?.data ?? response.data;
+    },
+};
+
+export default invoiceService;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\quoteService.js
+========================================
+import http from "./http";
+
+export const quoteService = {
+    async getAll(params = {}) {
+        const response = await http.get("/devis", { params });
+        return response.data?.data ?? response.data;
+    },
+
+    async getById(id) {
+        const response = await http.get(`/devis/${id}`);
+        return response.data?.data ?? response.data;
+    },
+
+    async create(payload) {
+        const response = await http.post("/devis", payload);
+        return response.data?.data ?? response.data;
+    },
+
+    async update(id, payload) {
+        const response = await http.put(`/devis/${id}`, payload);
+        return response.data?.data ?? response.data;
+    },
+};
+
+export default quoteService;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\shipmentService.js
+========================================
+import http from "./http";
+
+export const shipmentService = {
+    async getAll(params = {}) {
+        const response = await http.get("/expeditions", { params });
+        return response.data?.data ?? response.data;
+    },
+
+    async getById(id) {
+        const response = await http.get(`/expeditions/${id}`);
+        return response.data?.data ?? response.data;
+    },
+
+    async create(payload) {
+        const response = await http.post("/expeditions", payload);
+        return response.data?.data ?? response.data;
+    },
+
+    async update(id, payload) {
+        const response = await http.put(`/expeditions/${id}`, payload);
+        return response.data?.data ?? response.data;
+    },
+
+    async delete(id) {
+        const response = await http.delete(`/expeditions/${id}`);
+        return response.data;
+    },
+};
+
+export default shipmentService;
+
+
+========================================
+FICHIER : C:\wamp64\www\alliance-front\src\services\api\userService.js
+========================================

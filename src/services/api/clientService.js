@@ -1,37 +1,16 @@
-import http from "./http";
+import authService from "./authService";
+import ENDPOINTS from "./endpoints";
+import { createCrudService } from "./helpers";
 
-const clientService = {
-    async getAll(params = {}) {
-        const response = await http.get("/clients", { params });
-        return response.data?.data ?? response.data;
-    },
+export const clientService = {
+    ...createCrudService(ENDPOINTS.clients),
 
-    async getById(id) {
-        const response = await http.get(`/clients/${id}`);
-        return response.data?.data ?? response.data;
-    },
+    // Profil client de l'utilisateur connecté (renvoyé par /my).
+    async getMyProfile(config = {}) {
+        const data = await authService.my(config);
 
-    async create(payload) {
-        const response = await http.post("/clients", payload);
-        return response.data?.data ?? response.data;
-    },
-
-    async update(id, payload) {
-        const response = await http.put(`/clients/${id}`, payload);
-        return response.data?.data ?? response.data;
-    },
-
-    async delete(id) {
-        const response = await http.delete(`/clients/${id}`);
-        return response.data;
-    },
-
-    async getMyProfile() {
-        const response = await http.get("/my");
-        const data = response.data?.data ?? response.data;
         return data?.client ?? null;
     },
 };
 
 export default clientService;
-export { clientService };

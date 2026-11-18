@@ -1,12 +1,16 @@
 import http from "./http";
+import ENDPOINTS from "./endpoints";
+import { unwrap } from "./helpers";
 
-const dashboardService = {
-  async getDashboard(params = {}) {
-    const response = await http.get("/admin/dashboard", { params });
+export const dashboardService = {
+    async getDashboard(params = {}, config = {}) {
+        const response = await http.get(ENDPOINTS.admin.dashboard, {
+            ...config,
+            params,
+        });
 
-    // Compatible avec une réponse Laravel enveloppée dans data
-    return response.data?.data ?? response.data;
-  },
+        return unwrap(response.data);
+    },
 };
 
 export default dashboardService;

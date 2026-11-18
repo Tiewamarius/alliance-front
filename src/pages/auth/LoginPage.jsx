@@ -2,21 +2,25 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
-const ROLE_ROUTES = {
-    super_admin: "/admin",
-    admin: "/admin",
+function getErrorMessage(err) {
+    const data = err.response?.data;
 
-    agent_service_client: "/service-client",
-    agent_commercial: "/commercial",
-    agent_exploitation: "/exploitation",
-    responsable_transport: "/transport",
-    livreur: "/livraison",
-    comptable: "/comptabilite",
-    responsable_agence: "/agence",
+    const firstValidationError = data?.errors
+        ? Object.values(data.errors).flat()[0]
+        : null;
 
-    client: "/mon-compte",
-    auditeur: "/audit",
-};
+    if (firstValidationError) return firstValidationError;
+    if (data?.message) return data.message;
+
+    // Pas de réponse HTTP : API arrêtée, mauvaise URL ou blocage CORS.
+    if (!err.response && err.request) {
+        return import.meta.env.DEV
+            ? "API injoignable : vérifiez que Laravel est démarré et que VITE_API_BASE_URL est correct."
+            : "Impossible de joindre le serveur. Réessayez dans quelques instants.";
+    }
+
+    return err.message || "Connexion impossible. Vérifiez vos identifiants.";
+}
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -35,66 +39,23 @@ export default function LoginPage() {
         setSubmitting(true);
 
         try {
-            const response = await login({
+            // login() renvoie le rôle principal et la page d'accueil du rôle
+            // (voir src/config/roles.js).
+            const { primaryRole, homePath } = await login({
                 email: email.trim(),
                 password,
             });
 
-            // Les rôles peuvent être renvoyés sous forme de chaînes
-            // ou d'objets contenant un slug.
-            const roles = response?.roles ?? response?.user?.roles ?? [];
-
-            const roleSlugs = roles
-                .map((role) =>
-                    typeof role === "string"
-                        ? role
-                        : role?.slug ?? role?.name
-                )
-                .filter(Boolean);
-
-            // Ordre de priorité si plusieurs rôles sont attribués.
-            const rolePriority = [
-                "super_admin",
-                "admin",
-                "responsable_agence",
-                "responsable_transport",
-                "agent_exploitation",
-                "agent_service_client",
-                "agent_commercial",
-                "comptable",
-                "livreur",
-                "auditeur",
-                "client",
-            ];
-
-            const primaryRole = rolePriority.find((role) =>
-                roleSlugs.includes(role)
-            );
-
-            const roleDestination = ROLE_ROUTES[primaryRole];
-
             const requestedDestination = location.state?.from?.pathname;
 
-            // Pour les administrateurs, toujours privilégier leur dashboard.
-            const destination =
-                ["admin", "super_admin"].includes(primaryRole)
-                    ? "/admin"
-                    : requestedDestination || roleDestination || "/mon-compte";
+            // Les administrateurs arrivent toujours sur leur dashboard.
+            const destination = ["admin", "super_admin"].includes(primaryRole)
+                ? "/admin"
+                : requestedDestination || homePath;
 
             navigate(destination, { replace: true });
         } catch (err) {
-            const validationErrors = err.response?.data?.errors;
-
-            const firstValidationError = validationErrors
-                ? Object.values(validationErrors).flat()[0]
-                : null;
-
-            setError(
-                firstValidationError ||
-                err.response?.data?.message ||
-                err.message ||
-                "Connexion impossible. Vérifiez vos identifiants."
-            );
+            setError(getErrorMessage(err));
         } finally {
             setSubmitting(false);
         }

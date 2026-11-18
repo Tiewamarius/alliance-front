@@ -1,24 +1,8 @@
-import http from "./http";
+import ENDPOINTS from "./endpoints";
+import { createCrudService } from "./helpers";
 
-const expeditionService = {
-  async getAll(params = {}) {
-    const response = await http.get("/expeditions", {
-      params,
-    });
-
-    // Laravel renvoie ici : { data: { current_page, data: [], ... } }
-    return response.data?.data ?? response.data;
-  },
-
-  async getById(id) {
-    const response = await http.get(`/expeditions/${id}`);
-    return response.data?.data ?? response.data;
-  },
-
-  async create(payload) {
-    const response = await http.post("/expeditions", payload);
-    return response.data?.data ?? response.data;
-  },
-};
+// Les listes paginées de Laravel arrivent sous la forme
+// { current_page, data: [...], ... } une fois la clé "data" externe retirée.
+export const expeditionService = createCrudService(ENDPOINTS.expeditions);
 
 export default expeditionService;

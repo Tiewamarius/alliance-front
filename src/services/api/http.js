@@ -1,5 +1,8 @@
 import axios from "axios";
 
+export const TOKEN_KEY = "alliance_token";
+export const UNAUTHORIZED_EVENT = "auth:unauthorized";
+
 const http = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1",
     headers: {
@@ -10,7 +13,7 @@ const http = axios.create({
 });
 
 http.interceptors.request.use((config) => {
-    const token = localStorage.getItem("alliance_token");
+    const token = localStorage.getItem(TOKEN_KEY);
 
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -22,8 +25,11 @@ http.interceptors.request.use((config) => {
 http.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
-            localStorage.removeItem("alliance_token");
+        // Un 401 alors qu'un token existait : session expirée ou révoquée.
+        // AuthContext écoute cet événement pour déconnecter l'interface.
+        if (error.response?.status === 401 && localStorage.getItem(TOKEN_KEY)) {
+            localStorage.removeItem(TOKEN_KEY);
+            window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
         }
 
         return Promise.reject(error);

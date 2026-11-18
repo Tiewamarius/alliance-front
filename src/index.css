@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Sources Tailwind autorisées */
+@source "./components/admin-template";
+@source "./layouts/admin";

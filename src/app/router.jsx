@@ -185,9 +185,6 @@ export default function AppRouter() {
 
             <Route path="acces-refuse" element={<AccessDeniedPage />} />
             <Route path="*" element={<NotFoundPage />} />
-
-            <Route path="acces-refuse" element={<AccessDeniedPage />} />
-            <Route path="*" element={<NotFoundPage />} />
         </Routes>
     );
 }

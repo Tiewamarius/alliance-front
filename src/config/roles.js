@@ -16,21 +16,23 @@ export const ROLE_PRIORITY = [
     "client",
 ];
 
+// Page d'accueil de chaque rôle : uniquement des espaces qui existent dans
+// src/app/router.jsx (/admin, /agence, /logistique, /livraison, /mon-compte).
 export const ROLE_HOME = {
     super_admin: "/admin",
     admin: "/admin",
     responsable_agence: "/agence",
-    responsable_transport: "/transport",
-    agent_exploitation: "/exploitation",
-    agent_service_client: "/service-client",
-    agent_commercial: "/commercial",
-    comptable: "/comptabilite",
+    responsable_transport: "/logistique",
+    agent_exploitation: "/logistique",
     livreur: "/livraison",
-    auditeur: "/audit",
     client: "/mon-compte",
+    // Pas encore d'espace dédié dans le router : agent_service_client,
+    // agent_commercial, comptable, auditeur. Ils arrivent sur DEFAULT_HOME
+    // en attendant de créer leur espace (voir getHomePath).
 };
 
-export const DEFAULT_HOME = "/mon-compte";
+// Rôle sans espace dédié (ou utilisateur sans rôle) : accueil public.
+export const DEFAULT_HOME = "/";
 
 // L'API peut renvoyer des chaînes ("admin") ou des objets ({ slug: "admin" }).
 export function toRoleSlugs(roles) {
